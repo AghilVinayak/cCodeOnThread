@@ -1,8 +1,0 @@
-17:34:32 **** Incremental Build of configuration Debug for project test ****
-Info: Internal Builder is used for build
-gcc -Lpthread -o test.exe "src\\test.o" -lpthread 
-c:/mingw/bin/../lib/gcc/x86_64-w64-mingw32/10.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find -lpthread
-collect2.exe: error: ld returned 1 exit status
-
-17:34:32 Build Failed. 1 errors, 0 warnings. (took 172ms)
-
