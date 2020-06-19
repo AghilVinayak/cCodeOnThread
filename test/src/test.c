@@ -103,43 +103,47 @@ int main( int argc, char **argv)
 #include <stdlib.h>
 #include <pthread.h>
 
-#define LOOP_ITR 500000000
+#define LOOP_ITR 200000000
 long long sum = 0;
-void* counting_fn(void *args)
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void* counting_thread(void *args)
 {
 	int offset = *(int *)args;
 	for(int i = 0; i < LOOP_ITR; i++)
 	{
+		//critical section start
+		pthread_mutex_lock( &mutex);
 		sum += offset;
+
+		//critical section end
+		pthread_mutex_unlock( &mutex);
 	}
 	pthread_exit(NULL);
 }
 
 int main(void)
 {
+	pthread_t *pid1, *pid2;
+	int *offset1, *offset2;
 
-	pthread_t *pid1;
 	pid1 = malloc(sizeof(*pid1));
-	int *offset1;
-	offset1 = malloc(sizeof(*offset1));
-	*offset1 = 1;
-
-//	launch counting fn with offset 1
-	pthread_create(pid1,NULL, counting_fn, offset1);
-	pthread_join(*pid1,NULL);
-
-	pthread_t *pid2;
 	pid2 = malloc(sizeof(*pid2));
-	int *offset2;
+
+	offset1 = malloc(sizeof(*offset1));
 	offset2 = malloc(sizeof(*offset2));
+
+	*offset1 =  1;
 	*offset2 = -1;
 
-	//	launch counting fn with offset -1
-	pthread_create(pid2,NULL, counting_fn, offset2);
+	//	spawn threads
+	pthread_create(pid1,NULL, counting_thread, offset1);
+	pthread_create(pid2,NULL, counting_thread, offset2);
+
+	//	wait for threads to finish
+	pthread_join(*pid1,NULL);
 	pthread_join(*pid2,NULL);
 
-
-	//counting_fn(-1);
 	printf("\nSum = %lld\n", sum);
 }
 #endif
