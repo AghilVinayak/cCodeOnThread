@@ -1,8 +1,11 @@
-#if 0
+#define MUTEX_CODE
+
+
+#ifdef HELLO_WORLD_CODE
 /*
  ============================================================================
  Name        : test.c
- Author      : 
+ Author      :
  Version     :
  Copyright   : Your copyright notice
  Description : Hello World in C, Ansi-style
@@ -17,6 +20,8 @@ int main(void) {
 	return EXIT_SUCCESS;
 }
 #endif
+
+#ifdef DYNAMIC_MEM_THREAD
 //============================================================================
 // Name        : test.cpp
 // Author      : Aghil
@@ -36,7 +41,7 @@ struct sum_runner_struct {
 //thread function to generate sum of 0 to N
 void* sum_runner( void* arg)
 {
-	struct sum_runner_struct *arg_struct = (struct sum_runner_struct*) arg;	
+	struct sum_runner_struct *arg_struct = (struct sum_runner_struct*) arg;
 	long long sum = 0;
 	long long limit;
 	long long *limitPtr = arg_struct->limit;
@@ -52,7 +57,7 @@ void* sum_runner( void* arg)
 	}
 	//sum is global variable, so other threads can access
 	// do someting else
-	
+
 	*answerPtr = sum;
 	pthread_exit(answerPtr);
 }
@@ -89,6 +94,52 @@ int main( int argc, char **argv)
 		pthread_join(tid[i], (void**)&sum);
 		printf("\ni %d tid %lu Sum is %lld\n", i, tid[i], *sum);
 	}
-
-
 }
+
+#endif
+
+#ifdef MUTEX_CODE
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define LOOP_ITR 500000000
+long long sum = 0;
+void* counting_fn(void *args)
+{
+	int offset = *(int *)args;
+	for(int i = 0; i < LOOP_ITR; i++)
+	{
+		sum += offset;
+	}
+	pthread_exit(NULL);
+}
+
+int main(void)
+{
+
+	pthread_t *pid1;
+	pid1 = malloc(sizeof(*pid1));
+	int *offset1;
+	offset1 = malloc(sizeof(*offset1));
+	*offset1 = 1;
+
+//	launch counting fn with offset 1
+	pthread_create(pid1,NULL, counting_fn, offset1);
+	pthread_join(*pid1,NULL);
+
+	pthread_t *pid2;
+	pid2 = malloc(sizeof(*pid2));
+	int *offset2;
+	offset2 = malloc(sizeof(*offset2));
+	*offset2 = -1;
+
+	//	launch counting fn with offset -1
+	pthread_create(pid2,NULL, counting_fn, offset2);
+	pthread_join(*pid2,NULL);
+
+
+	//counting_fn(-1);
+	printf("\nSum = %lld\n", sum);
+}
+#endif
